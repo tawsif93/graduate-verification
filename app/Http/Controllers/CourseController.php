@@ -74,4 +74,54 @@ class CourseController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * $page_count);
 
     }
+
+    public function edit(Request $request, $id)
+    {
+        $course = Course::find($id);
+        return view('course.edit',compact('course'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $this->validate($request, [
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:255',
+            'credit' => 'required|integer|between:1,6',
+        ]);
+
+        try {
+            Course::find($id)->update($request->all());
+
+            $url = $request->input('url');
+
+            flash('Course updated successfully')->success();
+        } catch (Exception $e) {
+            flash('Could not update Course');
+            return redirect()->back();
+        }
+
+        return redirect($url);
+    }
+
+
+    public function show(Request $request, $id)
+    {
+        $course = Course::find($id);
+        return view('course.show',compact('course'));
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        try {
+            Course::find($id)->delete();
+            $url = $request->input('url');
+            
+        } catch (Exception $e) {
+            flash('The course cannot be deleted! If mark exist for this course, delete the mark first')->error();
+            return redirect()->back();
+        }
+        flash('Course deleted successfully');
+
+        return redirect()->back();
+    }
 }
